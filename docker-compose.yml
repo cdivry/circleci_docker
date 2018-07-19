@@ -1,0 +1,21 @@
+version: "2"
+services:
+
+  # first container
+  ssh_1:
+    build: ssh_1
+    ports:
+     - "4242:22"
+    environment:
+     - FOO=bar
+    tty: true
+
+  # first container
+  ssh_2:
+    build: ssh_2
+    ports:
+     - "1337:22"
+    environment:
+     - FOO=bar
+    tty: true
+

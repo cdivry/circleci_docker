@@ -1,0 +1,62 @@
+version: 2
+
+jobs:
+
+  build:
+
+    docker:
+      - image: debian:stretch
+
+    steps:
+      - checkout
+
+      - run:
+          name: Initialisation
+          command: |
+            echo "Demarrage des tests d'integration continue."
+            id
+            date
+            echo Europe/Paris | tee /etc/timezone
+            dpkg-reconfigure --frontend noninteractive tzdata
+
+      ## install dependencies ##
+      - run:
+          name: Installing dependencies
+          command: |
+            apt update
+            apt install -y apt-transport-https \
+                           ca-certificates \
+                           curl \
+                           gnupg2 \
+                           software-properties-common \
+                           curl \
+                           sudo
+
+      ## installing docker-ce ##
+      - run:
+          name: Installing docker-ce
+          command: |
+            apt remove -y docker
+            curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+            apt-key fingerprint 0EBFCD88
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+            apt update
+            apt install -y docker-ce
+
+      # installing docker-compose
+      - run:
+          name: Installing docker-compose
+          command: |
+            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+            chmod +x ~/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+
+      - setup_remote_docker
+
+      - run:
+          name: Start containers
+          command: |
+            set -x
+            docker-compose down && docker-compose up -d
+            docker ps
+
